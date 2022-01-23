@@ -1,7 +1,7 @@
 package com.aktimetrics.meter;
 
 import com.aktimetrics.core.transferobjects.Constants;
-import com.aktimetrics.core.api.Meter;
+import com.aktimetrics.meter.api.Meter;
 import com.aktimetrics.core.api.Registry;
 import com.aktimetrics.core.stereotypes.Measurement;
 import lombok.RequiredArgsConstructor;

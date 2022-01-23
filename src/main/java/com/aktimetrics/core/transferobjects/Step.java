@@ -22,7 +22,6 @@ public class Step implements Serializable {
     private String functionalCtxCode;
     private String locationalCtxCode;
     private String createdOn;
-
     private int version;
     private int sequence;
     private Map<String, Object> metadata;

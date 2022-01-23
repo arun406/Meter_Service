@@ -2,15 +2,16 @@ package com.aktimetrics.core.transferobjects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
-import org.bson.types.ObjectId;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @ToString
+@Builder
 public class Measurement implements Serializable {
 
     private String tenant;

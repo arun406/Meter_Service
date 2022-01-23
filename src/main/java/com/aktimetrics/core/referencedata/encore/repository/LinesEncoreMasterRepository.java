@@ -19,6 +19,6 @@ public interface LinesEncoreMasterRepository extends MongoRepository<LinesEncore
      * @return
      */
 
-    @Query("{ 'tenant': ?0 , 'airport' : ?1 , 'forwarderCode' : ?2, 'acCategory' : ?3 , 'status': ?4 }")
+    @Query("{ 'tenant': ?0 , 'airport' : ?1 , 'forwarderCode' : ?2, 'acCategory' : ?4 , 'status': ?3}")
     List<LinesEncoreMaster> findBy(String tenant, String airport, String forwarderCode, String status, String acCategory);
 }

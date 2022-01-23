@@ -1,7 +1,6 @@
 package com.aktimetrics.meter.generators;
 
 import com.aktimetrics.core.transferobjects.Step;
-import com.aktimetrics.core.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -11,18 +10,20 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 /**
- *
+ * CDMP-C Export Milestone Plan Time  Generator
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CDMPCExportStepMeasurementValueCalculator {
+public class CDMPCImportStepMeasurementValueCalculator {
 
     private final OffsetCalculator offsetCalculator;
 
     /**
-     * @param tenant   tenant code
-     * @param step     step instance of BKD
+     * prepares the measurement instance
+     *
+     * @param tenant   tenant
+     * @param step     step
      * @param stepCode step code
      * @return measurement value
      */
@@ -31,13 +32,12 @@ public class CDMPCExportStepMeasurementValueCalculator {
 
         long offset = this.offsetCalculator.getOffset(tenant, metadata, stepCode);
         log.info(String.format("%s Step Code offset in minutes is :  %s", stepCode, offset));
-        LocalDateTime planTime;
-        final LocalDateTime std = DateTimeUtil.getLocalDateTime((String) metadata.get("std"), "yyyy-MM-dd HH:mm");
-        //  plan time is STD - offset
-        //  plan time is STD + offset
-        planTime = !"DEP".equalsIgnoreCase(stepCode) && !"DEP-T".equalsIgnoreCase(stepCode) ? std.minusMinutes(offset) : std.plusMinutes(offset);
-        final String planTimeStr = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(planTime);
-        log.info("Plan Time: {}", planTimeStr);
+
+        // ARR plan time is STA + offset
+        final LocalDateTime planTime = ((LocalDateTime) metadata.get("sta")).plusMinutes(offset);
+        final String planTimeStr = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(planTime);
+        log.info("  Plan Time: " + planTimeStr);
         return planTimeStr;
     }
+
 }

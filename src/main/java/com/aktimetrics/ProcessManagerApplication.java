@@ -1,9 +1,10 @@
 package com.aktimetrics;
 
 import com.aktimetrics.core.transferobjects.Measurement;
+import com.aktimetrics.core.transferobjects.Step;
 import com.aktimetrics.core.transferobjects.StepEvent;
 import com.aktimetrics.core.transferobjects.StepMeasurementEvent;
-import com.aktimetrics.meter.service.MeterServiceImpl;
+import com.aktimetrics.meter.MeasurementService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,12 +27,17 @@ import java.util.stream.Collectors;
 public class ProcessManagerApplication {
 
     @Autowired
-    private MeterServiceImpl impl;
+    private MeasurementService meterService;
 
     public static void main(String[] args) {
         SpringApplication.run(ProcessManagerApplication.class, args);
     }
 
+    /**
+     * Consumes the StepEvent and prepares and produce the StepMeasurementEvent
+     *
+     * @return
+     */
     @Bean
     public java.util.function.Function<KStream<String, StepEvent>, KStream<String, StepMeasurementEvent>> consume() {
         return input -> {
@@ -38,7 +45,7 @@ public class ProcessManagerApplication {
             return input
                     .filter((s, stepEvent) -> "BKD".equalsIgnoreCase(stepEvent.getEventDetails().getCode()))
                     .flatMap((key, value) -> {
-                        final List<Measurement> measurements = getStepMeasurements(value);
+                        final List<Measurement> measurements = getStepMeasurements(value.getTenantKey(), value.getEventDetails());
                         return measurements.stream()
                                 .map(this::getStepMeasurementEvent)
                                 .map(this::getKeyValue)
@@ -56,11 +63,12 @@ public class ProcessManagerApplication {
     }
 
     /**
-     * @param value step event
+     * @param tenantKey tenant
+     * @param step      step
      * @return List of Measurement
      */
-    private List<Measurement> getStepMeasurements(StepEvent value) {
-        return impl.generateMeasurements(value.getTenantKey(), value.getEventDetails());
+    private List<Measurement> getStepMeasurements(String tenantKey, Step step) {
+        return meterService.generateMeasurements(tenantKey, step);
     }
 
     /**
@@ -72,13 +80,14 @@ public class ProcessManagerApplication {
     private StepMeasurementEvent getStepMeasurementEvent(Measurement measurement) {
         StepMeasurementEvent event = new StepMeasurementEvent();
         event.setEventId(UUID.randomUUID().toString());
+        event.setEventType("Measurement_Event");
         event.setEventCode("SMC");
         event.setEventName("Step_Measurement_Created");
-        event.setEventTime(LocalDateTime.now());
+        event.setEventTime(ZonedDateTime.now());
         event.setEventUTCTime(LocalDateTime.now(ZoneOffset.UTC));
         event.setEntityId(measurement.getId());
         event.setEntityType("measurement");
-        event.setEventType("Measurement_Event");
+
         event.setSource("Meter_System");
         event.setTenantKey(measurement.getTenant());
         event.setEventDetails(measurement);

@@ -1,12 +1,12 @@
 package com.aktimetrics.meter.service;
 
-import com.aktimetrics.core.api.Meter;
+import com.aktimetrics.meter.api.Meter;
 import com.aktimetrics.core.api.Registry;
 import com.aktimetrics.core.transferobjects.Constants;
 import com.aktimetrics.core.transferobjects.Measurement;
 import com.aktimetrics.core.transferobjects.Step;
 import com.aktimetrics.core.util.CollectionUtil;
-import com.aktimetrics.meter.MeterService;
+import com.aktimetrics.meter.MeasurementService;
 import com.aktimetrics.referencedata.model.ProcessDefinition;
 import com.aktimetrics.referencedata.model.StepDefinition;
 import com.aktimetrics.referencedata.service.ProcessDefinitionService;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ import static java.util.stream.Collectors.toCollection;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class MeterServiceImpl implements MeterService {
+public class CDMPCMeasurementServiceImpl implements MeasurementService {
 
     private final Registry registry;
     private final ProcessDefinitionService processDefinitionService;
@@ -43,12 +44,11 @@ public class MeterServiceImpl implements MeterService {
      * @param measurementCode measurement code
      */
     private Meter getMeter(String tenant, String stepCode, String measurementCode) {
-        final List<Object> meters = this.registry.lookupAll(registryEntry -> {
-                    return registryEntry.hasAttribute(Constants.ATT_METER_SERVICE) &&
-                            registryEntry.attribute(Constants.ATT_METER_SERVICE).equals(Constants.VAL_YES) &&
-                            (registryEntry.attribute(Constants.ATT_CODE).equals(measurementCode)
-                                    && registryEntry.attribute(Constants.ATT_STEP_CODE).equals(stepCode));
-                }
+        final List<Object> meters = this.registry.lookupAll(registryEntry ->
+                registryEntry.hasAttribute(Constants.ATT_METER_SERVICE) &&
+                        registryEntry.attribute(Constants.ATT_METER_SERVICE).equals(Constants.VAL_YES) &&
+                        (registryEntry.attribute(Constants.ATT_CODE).equals(measurementCode)
+                                && registryEntry.attribute(Constants.ATT_STEP_CODE).equals(stepCode))
         );
         Meter meter = null;
         for (Object m : meters) {
@@ -78,10 +78,11 @@ public class MeterServiceImpl implements MeterService {
         Objects.requireNonNull(processDefinition);
         Objects.requireNonNull(processDefinition.getSteps());
 
-        String boardPoint = (String) step.getMetadata().get("boardPoint");
-        String offPoint = (String) step.getMetadata().get("offPoint");
-        String origin = (String) step.getMetadata().get("origin");
-        String destination = (String) step.getMetadata().get("destination");
+        final Map<String, Object> metadata = step.getMetadata();
+        String boardPoint = (String) metadata.get("boardPoint");
+        String offPoint = (String) metadata.get("offPoint");
+        String origin = (String) metadata.get("origin");
+        String destination = (String) metadata.get("destination");
         log.debug(" board point {}, off point {}, origin {}, destination {}", boardPoint, offPoint, origin, destination);
         // applicable step definitions
         log.debug("finding applicable step definitions for the {} event", stepCode);
@@ -96,7 +97,7 @@ public class MeterServiceImpl implements MeterService {
                                     stepDefinition.getStepCode(), m.getMeasurementCode());
                             Meter meter = getMeter(tenantKey, stepDefinition.getStepCode(), m.getMeasurementCode());
                             if (meter != null) {
-                                final Measurement measurement = meter.measure(tenantKey, m.getMeasurementCode(), step);
+                                final Measurement measurement = meter.measure(tenantKey, step);
                                 measurements.add(measurement);
                                 log.debug(" measurement instance found for " + meter.getClass().getName());
                             } else {

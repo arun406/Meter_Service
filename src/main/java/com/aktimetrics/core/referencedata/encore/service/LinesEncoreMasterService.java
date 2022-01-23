@@ -53,15 +53,8 @@ public class LinesEncoreMasterService {
                                             String dow) {
 
         final Function<String, Predicate<LinesEncoreMaster>> acPredicateFunction = acCat -> l ->
-                StringUtils.isNotEmpty(acCat) && l.getAcCategory().equalsIgnoreCase(acCat) ? true : false;
+                StringUtils.isNotEmpty(acCat) && l.getAcCategory().equalsIgnoreCase(acCat);
 
-
-        Map<String, Object> params = Map.of("tenant", tenant,
-                "airport", airport,
-                "forwarderCode", forwarderCode,
-                "status", "CONFIRMED",
-                "acCategory", acCategory
-        );
 
         final List<LinesEncoreMaster> collect = this.repository.findBy(tenant, airport, forwarderCode, "CONFIRMED", acCategory).stream()
                 .filter(acPredicateFunction.apply(acCategory)
