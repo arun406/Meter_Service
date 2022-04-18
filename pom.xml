@@ -3,15 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.6.2</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>com.aktimetrix</groupId>
+        <artifactId>aktimetrix</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>com.aktimetrics.</groupId>
-    <artifactId>process-manager</artifactId>
+    <artifactId>meter_service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>process-manager</name>
+    <name>meter_service</name>
     <description>Demo project for Spring Could steam</description>
     <properties>
         <java.version>11</java.version>
@@ -67,6 +65,13 @@
             <scope>test</scope>
             <classifier>test-binder</classifier>
             <type>test-jar</type>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.javatuples/javatuples -->
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>1.2</version>
         </dependency>
     </dependencies>
     <dependencyManagement>
